@@ -1,0 +1,171 @@
+/* Основной контейнер */
+.cars-page-container {
+    position: fixed;
+    top: 20px;
+    right: 520px;
+    z-index: 1000;
+}
+
+/* Блок с информацией о пользователе */
+.user-info-corner {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #4a6fa5;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 500;
+}
+
+.user-role {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Основное содержимое */
+.cars-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-top: 80px; /* Чтобы не перекрывалось пользователем */
+}
+
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.cars-list {
+    list-style: none;
+    padding: 0;
+}
+
+.car-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.assignment-section {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.assign-button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.assign-button:hover {
+    background-color: #45a049;
+}
+
+
+.add-button, .delete-button {
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.delete-button {
+    background-color: #f44336;
+}
+
+.delete-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    .user-info-corner {
+        position: static;
+        margin-bottom: 20px;
+    }
+    
+    .cars-content {
+        padding-top: 20px;
+    }
+    
+    .assignment-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 250px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #F44336;
+}
+
+.notification button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 15px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

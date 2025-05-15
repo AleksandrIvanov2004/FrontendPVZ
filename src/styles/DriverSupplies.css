@@ -1,0 +1,201 @@
+.driver-supplies-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.loading-container,
+.error-container {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+}
+
+.error-container {
+    color: #e74c3c;
+}
+
+.supply-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.supply-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.supply-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.supply-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.supply-card-header h3 {
+    margin: 0;
+    color: #3498db;
+}
+
+.supply-status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.supply-status.future {
+    background-color: #f39c12;
+    color: white;
+}
+
+.supply-details {
+    margin-bottom: 15px;
+}
+
+.detail {
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.detail-label {
+    font-weight: bold;
+    margin-right: 10px;
+    min-width: 120px;
+    color: #7f8c8d;
+}
+
+.detail-value {
+    color: #34495e;
+}
+
+.details-button,
+.primary-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.details-button {
+    background-color: #3498db;
+    color: white;
+}
+
+.details-button:hover {
+    background-color: #2980b9;
+}
+
+.primary-button {
+    background-color: #2ecc71;
+    color: white;
+    margin-top: 20px;
+}
+
+.primary-button:hover {
+    background-color: #27ae60;
+}
+
+.no-supplies {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .supply-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail {
+        flex-direction: column;
+    }
+    
+    .detail-label {
+        margin-bottom: 5px;
+    }
+}
+
+supply-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.delivered-button {
+    padding: 10px 15px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.delivered-button:hover {
+    background-color: #27ae60;
+}
+
+.details-button {
+    background-color: #3498db;
+}
+
+.details-button:hover {
+    background-color: #2980b9;
+}
+
+.supply-card.overdue {
+    border-left: 4px solid #dc3545;
+    background-color: #fff5f5;
+}
+
+.supply-card.confirmed {
+    border-left: 4px solid #6c757d;
+    background-color: #f8f9fa;
+    opacity: 0.8;
+}
+
+.supply-status.overdue {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.supply-status.confirmed {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.success-message {
+    color: #28a745;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #d4edda;
+    border-radius: 4px;
+}

@@ -1,0 +1,100 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #343a40;
+    /* Dark background */
+    padding: 1rem;
+}
+
+.navbar-brand {
+    color: #ffffff;
+    /* White text */
+    font-size: 1.5rem;
+}
+
+.navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    /* Space between links */
+}
+
+.navbar-links li {
+    display: inline;
+}
+
+.navbar-links a {
+    color: #ffffff;
+    /* White text */
+    text-decoration: none;
+}
+
+.navbar-links a:hover {
+    color: #17a2b8;
+    /* Change color on hover */
+}
+
+.nav-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn {
+    background-color: #2ecc71;
+}
+
+.login-btn:hover {
+    background-color: #27ae60;
+}
+
+.logout-btn {
+    background-color: #e74c3c;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Иконки (используем Font Awesome) */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+/* Анимация загрузки */
+.navbar-loader {
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .navbar-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .navbar-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

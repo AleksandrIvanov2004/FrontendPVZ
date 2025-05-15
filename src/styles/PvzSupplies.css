@@ -1,0 +1,163 @@
+.pvz-supplies-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    color: #005b9f;
+    margin-bottom: 10px;
+}
+
+.pvz-info {
+    background-color: #f0f8ff;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #005b9f;
+}
+
+.pvz-info h3 {
+    margin-top: 0;
+    color: #005b9f;
+}
+
+.supply-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.supply-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.supply-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.supply-card.pending {
+    border-top: 4px solid #ffc107;
+}
+
+.supply-card.processing {
+    border-top: 4px solid #28a745;
+}
+
+.supply-card.delivered {
+    border-top: 4px solid #6c757d;
+    opacity: 0.8;
+}
+
+.supply-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.supply-card-header h3 {
+    margin: 0;
+    color: #005b9f;
+}
+
+.supply-status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.supply-status.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.supply-status.processing {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.supply-status.delivered {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.detail {
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.detail-label {
+    font-weight: bold;
+    min-width: 120px;
+    color: #555;
+}
+
+.detail-value {
+    flex-grow: 1;
+}
+
+.supply-actions {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+.confirm-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.confirm-button:hover {
+    background-color: #218838;
+}
+
+.loading-container,
+.error-container,
+.no-supplies {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+}
+
+.error-container {
+    color: #dc3545;
+}
+
+.supply-card.overdue {
+    border-left: 4px solid #dc3545;
+    background-color: #fff5f5;
+}
+
+.supply-card.confirmed {
+    border-left: 4px solid #6c757d;
+    background-color: #f8f9fa;
+    opacity: 0.8;
+}
+
+.supply-status.overdue {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.supply-status.confirmed {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
