@@ -71,54 +71,89 @@ const Navbar: React.FC = () => {
             <ul className="navbar-links">
             {!isAuthenticated ? ( 
                 <li>
-                    <button onClick={() => handleNavigate('/')}>Вход</button>
+                    <button
+                     className='nav-btn'
+                     onClick={() => handleNavigate('/')}>Вход</button>
                 </li>) : null}
 
                 {isAuthenticated ? (
                     <>
                         <li>
-                            <button onClick={() => handleNavigate('/profile')}>Профиль</button>
+                            <button
+                             className='nav-btn'
+                             onClick={() => handleNavigate('/profile')}>Профиль</button>
                         </li>
                         {role === 'admin' && (
                             <li>
-                                <button onClick={() => handleNavigate('/cars')}>Машины</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/cars')}>Машины</button>
                             </li>
                         )}
                         {role === 'admin' && (
                             <li>
-                                <button onClick={() => handleNavigate('/pick_up_points')}>Пункты выдачи</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/pick_up_points')}>Пункты выдачи</button>
                             </li>
                         )}
                          {role === 'admin' && (
                             <li>
-                                <button onClick={() => handleNavigate('/workers')}>Управление сотрудниками</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/workers')}>Управление сотрудниками</button>
                             </li>
                         )}
                         {role === 'admin' && (
                             <li>
-                                <button onClick={() => handleNavigate('/supplies')}>Управление поставками</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/supplies')}>Управление поставками</button>
                             </li>
                         )}
                         {role === 'worker' && (
                             <li>
-                                <button onClick={() => handleNavigate('/working_shifts')}>Смены</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/working_shifts')}>Смены</button>
                             </li>
                         )}
                         {role === 'driver' && (
                             <li>
-                                <button onClick={() => handleNavigate('/my_supplies')}>Мои поставки</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/my_supplies')}>Мои поставки</button>
                             </li>
                         )}
                         {role === 'worker' && (
                             <li>
-                                <button onClick={() => handleNavigate('/pvz_supplies')}>Поставки</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/pvz_supplies')}>Поставки</button>
+                            </li>
+                        )}
+                        {role === 'worker' && (
+                            <li>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/pvz_products')}>Товары</button>
                             </li>
                         )}
                         {role === 'admin' && (
                             <li>
-                                <button onClick={() => handleNavigate('/products')}>Товары</button>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/products')}>Товары</button>
                             </li>
                         )}
+                        {role === 'admin' && (
+                            <li>
+                                <button
+                                 className='nav-btn'
+                                 onClick={() => handleNavigate('/reports')}>Отчёты</button>
+                            </li>
+                        )}
+
                         <li>
                             <button className="logout-btn" onClick={handleLogout}>
                                 Выйти

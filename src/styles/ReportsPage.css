@@ -1,0 +1,324 @@
+/* ReportsPage.css */
+
+.reports-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+}
+
+.reports-container h1 {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 28px;
+    text-align: center;
+}
+
+/* Filters section */
+.filters-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.filter-row:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.filter-group label {
+    margin-right: 8px;
+    font-weight: 500;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.filter-group input[type="date"],
+.filter-group input[type="text"],
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s;
+}
+
+.filter-group input[type="date"]:focus,
+.filter-group input[type="text"]:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.search-group {
+    flex-grow: 1;
+}
+
+.search-group input {
+    width: 100%;
+    max-width: 300px;
+}
+
+/* Action buttons */
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.apply-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.apply-btn:hover {
+    background-color: #218838;
+}
+
+.reset-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.reset-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Controls section */
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.export-btn {
+    padding: 8px 16px;
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.export-btn:hover {
+    background-color: #138496;
+}
+
+.export-btn:disabled {
+    background-color: #b0b0b0;
+    cursor: not-allowed;
+}
+
+.stats {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* Loading and error states */
+.loading, .error, .no-results {
+    padding: 20px;
+    text-align: center;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.loading {
+    background-color: #e2f3ff;
+    color: #004085;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.no-results {
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+/* Table styles */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+table th {
+    background-color: #343a40;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 500;
+}
+
+table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+table tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Status badges */
+.status-completed {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.status-in_progress {
+    color: #ffc107;
+    font-weight: 500;
+}
+
+.status-canceled {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-group {
+        width: 100%;
+        margin-right: 0;
+    }
+    
+    .filter-group input[type="date"],
+    .filter-group input[type="text"],
+    .filter-group select {
+        width: 100%;
+    }
+    
+    .controls-section {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
+
+/* Добавляем или обновляем следующие стили */
+
+.controls-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    flex-wrap: nowrap; /* Запрещаем перенос на новую строку */
+    overflow-x: auto; /* Добавляем горизонтальную прокрутку если не помещается */
+    padding-bottom: 5px; /* Для визуального разделения если появится прокрутка */
+}
+
+.action-btn, .export-btn {
+    white-space: nowrap; /* Запрещаем перенос текста в кнопках */
+    flex-shrink: 0; /* Запрещаем уменьшение кнопок */
+}
+
+.stats {
+    margin-left: auto; /* Прижимаем статистику к правому краю */
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .controls-section {
+        gap: 8px;
+    }
+    
+    .action-btn, .export-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .tab-btn {
+    padding: 12px 24px;
+    margin-right: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    background-color: #f5f5f5;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    bottom: -1px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .tab-btn:hover {
+    background-color: #e0e0e0;
+    color: #333;
+  }
+  
+  .tab-btn.active {
+    background-color: #4a76a8;
+    color: white;
+    border-bottom: 3px solid #3a5f8a;
+    box-shadow: 0 4px 8px rgba(74, 118, 168, 0.2);
+  }
+  
+  .tab-btn.active:hover {
+    background-color: #3a5f8a;
+  }
+  
+  /* Для плавного перехода между вкладками */
+  .tab-content {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }

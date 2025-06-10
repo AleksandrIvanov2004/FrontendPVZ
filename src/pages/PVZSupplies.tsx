@@ -1,286 +1,273 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { selectAuthToken } from '../features/auth/authSlice';
-import { getSuppliesByPickUpPoint } from '../service/supplyService';
+import { getSuppliesByPickUpPoint, updateSupplyReadyStatus } from '../service/supplyService';
 import { getWorkerByUserId } from '../service/workerService';
 import { getPickUpPointById } from '../service/pickUpPointService';
 import { getUserById } from '../service/userService';
 import { SupplyType } from '../types/supplyType';
 import { getDriverById } from '../service/driverService';
+import { getAllProducts, updateProductStatus } from '../service/productService';
+import { productType, StatusEnum__2 } from '../types/productType'; // Импортируем тип продукта
 import '../styles/PvzSupplies.css';
 
-interface SupplyWithDetails extends SupplyType {
-    status: 'pending' | 'delivered' | 'processing' | 'confirmed' | 'overdue';
-    pickUpPointAddress?: string;
-    driverPhone?: string;
-    driverName?: string;
-    isConfirmed?: boolean;
+type SupplyStatus = 'pending' | 'processing';
+
+interface EnhancedSupply extends SupplyType {
+  status: SupplyStatus;
+  pickUpPointAddress: string;
+  driverPhone: string;
+  driverName: string;
 }
 
 const PvzSupplies = () => {
-    const userToken = useSelector(selectAuthToken);
-    const userId = Number(localStorage.getItem('userId'));
-    
-    const [supplies, setSupplies] = useState<SupplyWithDetails[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [currentPvzId, setCurrentPvzId] = useState<number | null>(null);
-    const [pvzAddress, setPvzAddress] = useState<string>('');
+  const token = useSelector(selectAuthToken);
+  const userId = Number(localStorage.getItem('userId'));
+  
+  const [supplies, setSupplies] = useState<EnhancedSupply[]>([]);
+  const [loading, setLoading] = useState({
+    initial: true,
+    updating: false,
+    updatingProducts: false
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [currentPvz, setCurrentPvz] = useState<{
+    id: number;
+    address: string;
+  } | null>(null);
+  
+  const [supplyToUpdate, setSupplyToUpdate] = useState<SupplyType | null>(null);
 
-    // Получаем подтвержденные поставки из localStorage
-    const getConfirmedSupplies = (): number[] => {
-        const confirmed = localStorage.getItem('confirmedSupplies');
-        return confirmed ? JSON.parse(confirmed) : [];
+  // Проверка дат
+  const isToday = (dateString: string) => 
+    new Date(dateString).toDateString() === new Date().toDateString();
+  
+  const isPastDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    return date < now && !isToday(dateString);
+  };
+
+  // Загрузка данных
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setError(null);
+        setLoading(prev => ({ ...prev, initial: true }));
+        
+        const worker = await getWorkerByUserId(userId);
+        const pvzId = Number(worker.pick_up_point_id);
+        const pvz = await getPickUpPointById(pvzId);
+        
+        setCurrentPvz({ id: pvzId, address: pvz.address });
+        
+        const suppliesData = await getSuppliesByPickUpPoint(pvzId);
+        const enhancedSupplies = await enhanceSuppliesData(suppliesData.data);
+        
+        setSupplies(enhancedSupplies.filter(s => !isPastDate(s.time)));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
+        console.error('Ошибка загрузки:', err);
+      } finally {
+        setLoading(prev => ({ ...prev, initial: false }));
+      }
     };
 
-    // Добавляем поставку в подтвержденные
-    const addConfirmedSupply = (supplyId: number) => {
-        const confirmed = getConfirmedSupplies();
-        if (!confirmed.includes(supplyId)) {
-            const updated = [...confirmed, supplyId];
-            localStorage.setItem('confirmedSupplies', JSON.stringify(updated));
+    if (userId && token) loadData();
+  }, [userId, token]);
+
+  // Обработка обновлений
+  useEffect(() => {
+    const processUpdate = async () => {
+      if (!supplyToUpdate || !token) return;
+      
+      try {
+        setLoading(prev => ({ ...prev, updating: true }));
+        setError(null);
+        
+        // 1. Обновляем статус поставки
+        await updateSupplyReadyStatus(supplyToUpdate.id, supplyToUpdate);
+        
+        // 2. Получаем все товары для этой поставки
+        const productsResponse = await getAllProducts();
+        const productsForSupply = productsResponse.data.filter(
+          (product: productType) => product.supply_id === supplyToUpdate.id
+        );
+        
+        // 3. Обновляем статус каждого товара
+        setLoading(prev => ({ ...prev, updatingProducts: true }));
+        await Promise.all(
+          productsForSupply.map((product: productType) => 
+            updateProductStatus(product.id, {
+              ...product,
+              status: 'DELIVERED_IN_PVZ' as StatusEnum__2
+            })
+          )
+        );
+        
+        // 4. Обновляем состояние
+        setSupplies(prev => prev.map(s => 
+          s.id === supplyToUpdate.id ? { ...s, ready: true } : s
+        ));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Ошибка обновления статуса');
+        console.error('Ошибка обновления:', err);
+      } finally {
+        setLoading(prev => ({ 
+          ...prev, 
+          updating: false,
+          updatingProducts: false 
+        }));
+        setSupplyToUpdate(null);
+      }
+    };
+
+    processUpdate();
+  }, [supplyToUpdate, token]);
+
+  // Обогащение данных поставки
+  const enhanceSuppliesData = async (supplies: SupplyType[]): Promise<EnhancedSupply[]> => {
+    try {
+      return await Promise.all(supplies.map(async supply => {
+        const point = await getPickUpPointById(supply.pick_up_point_id);
+        
+        let driverInfo = { phone: 'Не указан', name: 'Не указан' };
+        if (supply.driver_id) {
+          const driver = await getDriverById(supply.driver_id);
+          const user = await getUserById(driver.user_id);
+          driverInfo = {
+            phone: user.phone_number || 'Не указан',
+            name: `${user.surname} ${user.name} ${user.last_name}`.trim()
+          };
         }
-    };
-
-    // Проверяем, прошли ли сутки с момента поставки
-    const isOverdue = (supplyTime: string): boolean => {
-        const supplyDate = new Date(supplyTime);
-        const now = new Date();
-        const diffTime = now.getTime() - supplyDate.getTime();
-        const diffDays = diffTime / (1000 * 60 * 60 * 24);
-        return diffDays >= 1;
-    };
-
-    useEffect(() => {
-        const fetchPvzSupplies = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-                
-                const workerData = await getWorkerByUserId(userId);
-                const pvzId = Number(workerData.pick_up_point_id);
-                setCurrentPvzId(pvzId);
-                
-                const pvzData = await getPickUpPointById(pvzId);
-                setPvzAddress(pvzData.address);
-                
-                const response = await getSuppliesByPickUpPoint(pvzId);
-                const confirmedSupplies = getConfirmedSupplies();
-                const now = new Date();
-                
-                const enrichedSupplies = await Promise.all(
-                    response.data.map(async (supply: SupplyType) => {
-                        const supplyDate = new Date(supply.time);
-                        const isConfirmed = confirmedSupplies.includes(supply.id);
-                        const overdue = isOverdue(supply.time);
-                        
-                        // Определяем статус поставки
-                        let status: 'pending' | 'delivered' | 'processing' | 'confirmed' | 'overdue';
-                        
-                        if (isConfirmed) {
-                            status = 'confirmed';
-                        } else if (overdue) {
-                            status = 'overdue';
-                        } else if (supplyDate.toDateString() === now.toDateString()) {
-                            status = 'processing';
-                        } else {
-                            status = 'pending';
-                        }
-                        
-                        const pointData = await getPickUpPointById(supply.pick_up_point_id);
-                        
-                        let driverPhone = 'Не указан';
-                        let driverName = 'Не указан';
-                        if (supply.driver_id) {
-                            try {
-                                const driverData = await getDriverById(supply.driver_id);
-                                const userData = await getUserById(driverData.user_id);
-                                driverPhone = userData.phone_number || 'Не указан';
-                                driverName = `${userData.surname} ${userData.name} ${userData.last_name}`;
-                            } catch (error) {
-                                console.error(`Ошибка получения данных водителя ${supply.driver_id}:`, error);
-                            }
-                        }
-                        
-                        return {
-                            ...supply,
-                            status,
-                            pickUpPointAddress: pointData.address,
-                            driverPhone,
-                            driverName,
-                            isConfirmed
-                        };
-                    })
-                );
-                
-                // Фильтруем поставки - скрываем только подтвержденные, которым больше суток
-                const filteredSupplies = enrichedSupplies.filter(supply => {
-                    if (supply.isConfirmed && isOverdue(supply.time)) {
-                        return false;
-                    }
-                    return true;
-                });
-                
-                // Сортируем поставки
-                filteredSupplies.sort((a, b) => {
-                    // Сначала просроченные
-                    if (a.status === 'overdue' && b.status !== 'overdue') return -1;
-                    if (b.status === 'overdue' && a.status !== 'overdue') return 1;
-                    // Затем сегодняшние
-                    if (a.status === 'processing' && b.status !== 'processing') return -1;
-                    if (b.status === 'processing' && a.status !== 'processing') return 1;
-                    // Затем остальные
-                    return new Date(a.time).getTime() - new Date(b.time).getTime();
-                });
-                
-                setSupplies(filteredSupplies);
-            } catch (error) {
-                console.error('Ошибка загрузки поставок:', error);
-                setError('Не удалось загрузить данные о поставках');
-            } finally {
-                setIsLoading(false);
-            }
+        
+        return {
+          ...supply,
+          status: isToday(supply.time) ? 'processing' : 'pending',
+          pickUpPointAddress: point.address,
+          driverPhone: driverInfo.phone,
+          driverName: driverInfo.name
         };
-
-        if (userId && userToken) {
-            fetchPvzSupplies();
-        }
-    }, [userId, userToken]);
-
-    const handleConfirmDelivery = async (supplyId: number) => {
-        try {
-            // Добавляем в подтвержденные
-            addConfirmedSupply(supplyId);
-            
-            // Обновляем состояние
-            setSupplies(prevSupplies => 
-                prevSupplies.map(supply => 
-                    supply.id === supplyId 
-                        ? { ...supply, status: 'confirmed', isConfirmed: true } 
-                        : supply
-                )
-            );
-            
-        } catch (error) {
-            console.error('Ошибка подтверждения поставки:', error);
-            setError('Не удалось подтвердить получение поставки');
-        }
-    };
-
-    const formatDate = (dateString: string) => {
-        const options: Intl.DateTimeFormatOptions = { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        };
-        return new Date(dateString).toLocaleDateString('ru-RU', options);
-    };
-
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'pending': return 'Ожидается';
-            case 'processing': return 'Сегодня';
-            case 'confirmed': return 'Подтверждена';
-            case 'overdue': return 'Просрочена';
-            default: return '';
-        }
-    };
-
-    const getStatusClass = (status: string) => {
-        switch (status) {
-            case 'pending': return 'pending';
-            case 'processing': return 'processing';
-            case 'confirmed': return 'confirmed';
-            case 'overdue': return 'overdue';
-            default: return '';
-        }
-    };
-
-    if (isLoading) {
-        return <div className="loading-container">Загрузка данных...</div>;
+      }));
+    } catch (err) {
+      console.error('Ошибка обогащения данных:', err);
+      throw err;
     }
+  };
 
-    if (error) {
-        return <div className="error-container">{error}</div>;
-    }
+  // Обработчик принятия поставки
+  const handleAcceptDelivery = (supplyId: number) => {
+    const supply = supplies.find(s => s.id === supplyId);
+    if (!supply) return;
 
-    return (
-        <div className="pvz-supplies-container">
-            <div className="header">
-                <h1>Поставки в пункт выдачи</h1>
-                <div className="pvz-info">
-                    <h3>ПВЗ #{currentPvzId}</h3>
-                    <p>{pvzAddress}</p>
-                </div>
-            </div>
-            
-            <div className="supplies-list">
-                {supplies.length > 0 ? (
-                    <div className="supply-cards">
-                        {supplies.map(supply => (
-                            <div key={supply.id} className={`supply-card ${getStatusClass(supply.status)}`}>
-                                <div className="supply-card-header">
-                                    <h3>Поставка #{supply.id}</h3>
-                                    <span className={`supply-status ${getStatusClass(supply.status)}`}>
-                                        {getStatusLabel(supply.status)}
-                                    </span>
-                                </div>
-                                
-                                <div className="supply-details">
-                                    <div className="detail">
-                                        <span className="detail-label">Дата и время:</span>
-                                        <span className="detail-value">{formatDate(supply.time)}</span>
-                                    </div>
-                                    
-                                    <div className="detail">
-                                        <span className="detail-label">Адрес ПВЗ:</span>
-                                        <span className="detail-value">{supply.pickUpPointAddress}</span>
-                                    </div>
-                                    
-                                    {supply.driver_id && (
-                                        <>
-                                            <div className="detail">
-                                                <span className="detail-label">Водитель:</span>
-                                                <span className="detail-value">
-                                                    {supply.driverName} 
-                                                </span>
-                                            </div>
-                                            <div className="detail">
-                                                <span className="detail-label">Телефон:</span>
-                                                <a 
-                                                    href={`tel:${supply.driverPhone}`} 
-                                                    className="detail-value phone-link"
-                                                >
-                                                    {supply.driverPhone}
-                                                </a>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                                
-                                {(supply.status === 'processing' || supply.status === 'overdue') && (
-                                    <div className="supply-actions">
-                                        <button 
-                                            className="confirm-button"
-                                            onClick={() => handleConfirmDelivery(supply.id)}
-                                        >
-                                            Подтвердить получение
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="no-supplies">
-                        <p>Нет поставок в ваш пункт выдачи</p>
-                    </div>
-                )}
-            </div>
+    setSupplyToUpdate({
+      ...supply,
+      ready: true
+    });
+  };
+
+  // Форматирование даты
+  const formatDate = (dateString: string) => 
+    new Date(dateString).toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+  if (loading.initial) return <div className="loading">Загрузка данных...</div>;
+  if (error) return <div className="error">{error}</div>;
+  if (!currentPvz) return <div className="error">Не удалось загрузить данные ПВЗ</div>;
+
+  return (
+    <div className="pvz-supplies">
+      <header>
+        <h1>Поставки в пункт выдачи</h1>
+        <div className="pvz-info">
+          <h3>ПВЗ #{currentPvz.id}</h3>
+          <p>{currentPvz.address}</p>
         </div>
-    );
+      </header>
+      
+      <div className="supplies-list">
+        {supplies.length > 0 ? (
+          <div className="supply-cards">
+            {supplies
+              .sort((a, b) => 
+                a.status === 'processing' ? -1 : 
+                b.status === 'processing' ? 1 : 
+                new Date(a.time).getTime() - new Date(b.time).getTime()
+              )
+              .map(supply => (
+                <div key={supply.id} className={`supply-card ${supply.status}`}>
+                  <div className="card-header">
+                    <h3>Поставка #{supply.id}</h3>
+                    <span className={`status ${supply.status}`}>
+                      {supply.status === 'processing' ? 'Сегодня' : 'Запланирована'}
+                    </span>
+                  </div>
+                  
+                  <div className="card-details">
+                    <Detail label="Дата и время" value={formatDate(supply.time)} />
+                    <Detail label="Адрес ПВЗ" value={supply.pickUpPointAddress} />
+                    
+                    {supply.driver_id && (
+                      <>
+                        <Detail label="Водитель" value={supply.driverName} />
+                        <Detail 
+                          label="Телефон" 
+                          value={
+                            <a href={`tel:${supply.driverPhone}`}>
+                              {supply.driverPhone}
+                            </a>
+                          } 
+                        />
+                      </>
+                    )}
+                    
+                    <div className="delivery-action">
+                      {supply.ready ? (
+                        <div className="accepted">
+                          <span>Поставка принята</span>
+                          <span>✓</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleAcceptDelivery(supply.id)}
+                          disabled={
+                            loading.updating && supplyToUpdate?.id === supply.id ||
+                            loading.updatingProducts
+                          }
+                        >
+                          {loading.updating && supplyToUpdate?.id === supply.id
+                            ? 'Обновление статуса...'
+                            : loading.updatingProducts
+                              ? 'Обновление товаров...'
+                              : 'Принять поставку'
+                          }
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        ) : (
+          <div className="empty">Нет активных поставок</div>
+        )}
+      </div>
+    </div>
+  );
 };
+
+// Вспомогательный компонент для деталей
+const Detail: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <div className="detail">
+    <span className="label">{label}:</span>
+    <span className="value">{value}</span>
+  </div>
+);
 
 export default PvzSupplies;

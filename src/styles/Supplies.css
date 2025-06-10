@@ -136,3 +136,19 @@
         overflow-x: auto;
     }
 }
+
+.time-hint {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}

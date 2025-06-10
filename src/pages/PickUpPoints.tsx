@@ -3,16 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { selectAuthToken } from '../features/auth/authSlice';
 import { useSelector } from 'react-redux';
 import { 
-    getAvailablePickUpPoints, 
+    getPickUpPointsByRegion,
     assignPickUpPointToWorker, 
     addPickUpPoint, 
     deletePickUpPoint 
 } from '../service/pickUpPointService';
+import { getWorkersByRegion } from '../service/workerService';
+import { getUserById } from '../service/userService';
 import '../styles/CarsPage.css';
+
+interface WorkerWithInfo {
+    id: number;
+    user_id: number;
+    userInfo: {  // Это ключевое изменение - используем вложенный объект userInfo
+        name: string;
+        surname: string;
+        last_name: string;
+    };
+}
 
 const PickUpPointsPage = () => {
     const navigate = useNavigate();
     const [pickUpPoints, setPickUpPoints] = useState<any[]>([]);
+    const [workers, setWorkers] = useState<WorkerWithInfo[]>([]);
     const [region, setRegion] = useState<number>(0);
     const [workerId, setWorkerId] = useState<number | null>(null);
     const [selectedPickUpPointId, setSelectedPickUpPointId] = useState<number | null>(null);
@@ -20,9 +33,10 @@ const PickUpPointsPage = () => {
     const [newRegion, setNewRegion] = useState<number>(0);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [loadingWorkers, setLoadingWorkers] = useState(false);
     const userToken = useSelector(selectAuthToken);
 
-    // Проверка авторизации при загрузке страницы
+    // Проверка авторизации
     useEffect(() => {
         const token = localStorage.getItem('userToken');
         if (!token) {
@@ -31,7 +45,7 @@ const PickUpPointsPage = () => {
         }
     }, [navigate]);
 
-    // Автоматическое скрытие сообщений через 5 секунд
+    // Скрытие сообщений
     useEffect(() => {
         if (successMessage || error) {
             const timer = setTimeout(() => {
@@ -42,19 +56,67 @@ const PickUpPointsPage = () => {
         }
     }, [successMessage, error]);
 
-    // Запрос пунктов выдачи с сервера
+    // Загрузка пунктов выдачи и работников при изменении региона
     useEffect(() => {
         fetchPickUpPoints();
+        if (region) {
+            fetchWorkers();
+        } else {
+            setWorkers([]);
+        }
     }, [region]);
 
     const fetchPickUpPoints = async () => {
         try {
-            const data = await getAvailablePickUpPoints(userToken, region);
-            setPickUpPoints(data);
+            const data = await getPickUpPointsByRegion(region);
+            setPickUpPoints(data.data);
         } catch (e: any) {
             setError(e.message);
         }
     };
+
+    const fetchWorkers = async () => {
+        if (!region) return;
+        
+        setLoadingWorkers(true);
+        try {
+            const workerResponse = await getWorkersByRegion(region);
+            
+            // Для каждого водителя получаем информацию о пользователе
+            const workersWithInfo = await Promise.all(
+                workerResponse.data.map(async (worker: any) => {
+                    try {
+                        const userInfo = await getUserById(worker.user_id);
+                        return {
+                            ...worker,
+                            userInfo: {
+                                name: userInfo.name,
+                                surname: userInfo.surname,
+                                last_name: userInfo.last_name
+                            }
+                        };
+                    } catch (error) {
+                        console.error(`Ошибка загрузки пользователя ${worker.user_id}`, error);
+                        return {
+                            ...worker,
+                            userInfo: {
+                                name: 'Неизвестно',
+                                surname: '',
+                                last_name: ''
+                            }
+                        };
+                    }
+                })
+            );
+            
+            setWorkers(workersWithInfo);
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setLoadingWorkers(false);
+        }
+    };
+
 
     const handleAssignPickUpPoint = async () => {
         if (!workerId || !selectedPickUpPointId) {
@@ -64,11 +126,12 @@ const PickUpPointsPage = () => {
 
         try {
             await assignPickUpPointToWorker(workerId, selectedPickUpPointId, userToken);
+            setSuccessMessage('Пункт выдачи успешно назначен работнику');
             setWorkerId(null);
             setSelectedPickUpPointId(null);
             fetchPickUpPoints();
         } catch (e: any) {
-        
+            setError(e.message);
         }
     };
 
@@ -111,15 +174,12 @@ const PickUpPointsPage = () => {
 
     return (
         <div className="cars-page-container">
-            {/* Уведомление об успехе */}
             {successMessage && (
                 <div className="notification success">
                     {successMessage}
                     <button onClick={() => setSuccessMessage(null)}>×</button>
                 </div>
             )}
-
-            {/* Уведомление об ошибке */}
             {error && (
                 <div className="notification error">
                     {error}
@@ -141,6 +201,13 @@ const PickUpPointsPage = () => {
                                 placeholder="Введите регион"
                             />
                         </label>
+                        <button 
+                            className='refresh-button'
+                            onClick={fetchPickUpPoints}
+                            disabled={loadingWorkers}
+                        >
+                            {loadingWorkers ? 'Загрузка...' : 'Обновить список'}
+                        </button>
                     </div>
 
                     <ul className="cars-list">
@@ -160,13 +227,19 @@ const PickUpPointsPage = () => {
 
                     <div className="assignment-section">
                         <label>
-                            ID Работника:
-                            <input
-                                type="number"
+                            Работник:
+                            <select
                                 value={workerId ?? ''}
                                 onChange={(e) => setWorkerId(Number(e.target.value) || null)}
-                                placeholder="Введите ID работника"
-                            />
+                                disabled={workers.length === 0 || loadingWorkers}
+                            >
+                                <option value="">Выберите работника</option>
+                                {workers.map((worker) => (
+                                    <option key={worker.id} value={worker.id}>
+                                        {worker.userInfo.surname} {worker.userInfo.name} {worker.userInfo.last_name} (ID: {worker.id})
+                                    </option>
+                                ))}
+                            </select>
                         </label>
 
                         <button 

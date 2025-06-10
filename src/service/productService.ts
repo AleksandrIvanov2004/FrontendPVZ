@@ -21,3 +21,27 @@ export const addProduct = async (payload: productType, userToken: string): Promi
         throw new Error('Ошибка при добавлении товара');
     }
 };
+
+export const updateProduct = async (id: number, updatedData: productType, userToken: string): Promise<productType> => {
+    try {
+        const response = await api.put(`/products/${id}`, updatedData, {
+            headers: {
+                Authorization: `Bearer ${userToken}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error('Ошибка при обновлении товара');
+    }
+};
+
+export const updateProductStatus = async (productId: number, updatedData: productType): Promise<productType> => {
+    try {
+        const response = await api.put(`/products/${productId}`, updatedData, {
+           
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error('Ошибка при обновлении товара');
+    }
+};

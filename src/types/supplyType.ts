@@ -3,4 +3,5 @@ export type SupplyType = {
     driver_id: number
     pick_up_point_id: number
     time: string
+    ready: boolean
 }

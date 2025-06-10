@@ -21,3 +21,12 @@ export const getWorkerByUserId = async (user_id: number): Promise<workerType> =>
         throw new Error('Error fetching users');
     }
 };
+
+export const getWorkersByRegion = async (region: number): Promise<{ data: workerType[] }> => {
+    try {
+        const response = await api.get(`/workers/list/${region}`);
+        return {data: response.data};  
+    } catch (error) {
+        throw new Error('Error fetching workers');
+    }
+};

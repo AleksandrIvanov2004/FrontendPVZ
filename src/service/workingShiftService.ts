@@ -12,3 +12,12 @@ export const addWorkingShift = async (payload: workingShiftType, userToken: stri
         throw new Error('Ошибка при добавлении смены');
     }
 };
+
+export const getAllWorkingShifts = async (): Promise<{ data: workingShiftType[] }> => {
+    try {
+        const response = await api.get('/all_working_shifts');
+        return { data: response.data }; 
+    } catch (error) {
+        throw new Error('Ошибка при получении смен');
+    }
+};

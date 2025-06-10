@@ -15,6 +15,8 @@ import { setProfile } from './features/profile/profileSlice';
 import Supplies from './pages/Supplies';
 import PvzSupplies from './pages/PVZSupplies';
 import ProductsPage from './pages/Product';
+import ShiftsReportPage from './pages/ShiftsReportPage';
+import ProductsPagePVZ from './pages/ProductsPage';
 
 
  function App() {
@@ -32,6 +34,8 @@ import ProductsPage from './pages/Product';
         <Route path="/my_supplies" element={<DriverSupplies />} />
         <Route path="/pvz_supplies" element={<PvzSupplies />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/reports" element={<ShiftsReportPage />} />
+        <Route path="/pvz_products" element={<ProductsPagePVZ />} />
       </Routes>
     </>
   );

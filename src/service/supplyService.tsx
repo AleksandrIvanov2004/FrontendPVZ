@@ -10,13 +10,24 @@ export const getAllSupplies = async (): Promise<{ data: SupplyType[] }> => {
     }
 };
 
-export const addSupply = async (payload: SupplyType, userToken: string): Promise<void> => {
+export const getSupplyById = async (id: number): Promise<SupplyType> => {
     try {
-        await api.post('/supplies', payload, {
+        const response = await api.get(`/supplies/${id}`);
+        return response.data;  
+    } catch (error) {
+        throw new Error('Error fetching supplies');
+    }
+};
+
+
+export const addSupply = async (payload: SupplyType, userToken: string): Promise<SupplyType> => {
+    try {
+        const response = await api.post('/supplies', payload, {
             headers: {
                 Authorization: `Bearer ${userToken}`,
             },
         });
+        return response.data;
     } catch (error) {
         throw new Error('Ошибка при добавлении поставки');
     }
@@ -45,5 +56,16 @@ export const deleteSupplyById = async (supplyId: number): Promise<void> => {
         await api.delete(`/supplies/${supplyId}`);
     } catch (error) {
         throw new Error('Ошибка при удалении поставки');
+    }
+};
+
+export const updateSupplyReadyStatus = async (supplyId: number, updatedData: SupplyType): Promise<SupplyType> => {
+    try {
+        const response = await api.put(`/supplies/${supplyId}`, updatedData, {
+           
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error('Ошибка при обновлении поставки');
     }
 };

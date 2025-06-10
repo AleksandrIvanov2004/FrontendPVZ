@@ -8,7 +8,7 @@ import uiReducer from './features/ui/uiSlice';
      reducer: {
          auth: authReducer,
          profile: profileReducer,
-         ui: uiReducer
+         ui: uiReducer,
      },
  });
  

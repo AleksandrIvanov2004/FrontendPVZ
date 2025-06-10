@@ -75,3 +75,12 @@ export const getPickUpPointById = async (id: number): Promise<pickUpPointType> =
         throw new Error('Error fetching users');
     }
 };
+
+export const getPickUpPointsByRegion = async (region: number): Promise<{ data: pickUpPointType[] }> => {
+    try {
+        const response = await api.get(`/pick_up_points/list/${region}`);
+        return {data: response.data};  
+    } catch (error) {
+        throw new Error('Error fetching pick up points');
+    }
+};

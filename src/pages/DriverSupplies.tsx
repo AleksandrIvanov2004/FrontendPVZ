@@ -26,20 +26,18 @@ const DriverSupplies = () => {
     const [currentDriverId, setCurrentDriverId] = useState<number | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    // Получаем подтвержденные поставки из localStorage
     const getConfirmedSupplies = (): number[] => {
-        const confirmed = localStorage.getItem('confirmedSupplies');
-        return confirmed ? JSON.parse(confirmed) : [];
-    };
-
-    // Добавляем поставку в подтвержденные
-    const addConfirmedSupply = (supplyId: number) => {
-        const confirmed = getConfirmedSupplies();
-        if (!confirmed.includes(supplyId)) {
-            const updated = [...confirmed, supplyId];
-            localStorage.setItem('confirmedSupplies', JSON.stringify(updated));
-        }
-    };
+      const confirmed = localStorage.getItem(`confirmedSupplies_${userId}`);
+      return confirmed ? JSON.parse(confirmed) : [];
+  };
+  
+  const addConfirmedSupply = (supplyId: number) => {
+      const confirmed = getConfirmedSupplies();
+      if (!confirmed.includes(supplyId)) {
+          const updated = [...confirmed, supplyId];
+          localStorage.setItem(`confirmedSupplies_${userId}`, JSON.stringify(updated));
+      }
+  };
 
     // Проверяем, прошли ли сутки с момента поставки
     const isOverdue = (supplyTime: string): boolean => {
@@ -242,4 +240,4 @@ const DriverSupplies = () => {
     );
 };
 
-export default DriverSupplies;
+export default DriverSupplies;                                                                                                                                   
